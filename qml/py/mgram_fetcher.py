@@ -6,6 +6,7 @@ Uses Python 3.11 standard library features
 
 import os
 import re
+import ssl
 import urllib.request
 import urllib.parse
 from datetime import datetime, timezone, timedelta
@@ -200,6 +201,92 @@ class MeteogramFetcher:
             print(f"Failed to scrape coordinates for ID {city_id}: {e}")
         return None, None
 
+    def convert_gps_to_grid(self, lat: float, lon: float, lang: str = "pl") -> dict:
+        """
+        Converts GPS latitude/longitude into UM Model row/col format using meteo.pl's
+        https://old.meteo.pl//um/php/mgram_search.php?NALL=...&EALL=... endpoint.
+        """
+        try:
+            n_all = float(lat)
+            e_all = float(lon)
+        except (ValueError, TypeError):
+            return {"error": "Nieprawidłowe współrzędne GPS."}
+
+        lang_code = "en" if str(lang).lower().startswith("en") else "pl"
+        fdate = self.get_latest_fdate()
+
+        search_urls = [
+            f"https://old.meteo.pl/um/php/mgram_search.php?NALL={n_all}&EALL={e_all}&lang={lang_code}&fdate={fdate}",
+            f"http://www.meteo.pl/um/php/mgram_search.php?NALL={n_all}&EALL={e_all}&lang={lang_code}&fdate={fdate}",
+            f"https://old.meteo.pl/um/php/meteorogram_um.php?ntype=0u&NALL={n_all}&EALL={e_all}&lang={lang_code}&fdate={fdate}"
+        ]
+
+        row = None
+        col = None
+
+        for url in search_urls:
+            try:
+                context = ssl.create_default_context()
+                context.check_hostname = False
+                context.verify_mode = ssl.CERT_NONE
+                req = urllib.request.Request(url, headers={'User-Agent': 'harbour-meteopl/1.5 SailfishOS'})
+                with urllib.request.urlopen(req, context=context, timeout=6) as response:
+                    html = response.read().decode('utf-8', errors='ignore')
+
+                    # 1. Look for mgram_pict.php link
+                    img_match = re.search(r'mgram_pict\.php\?.*?row=(\d+)&.*?col=(\d+)', html, re.I)
+                    if not img_match:
+                        img_match = re.search(r'mgram_pict\.php\?.*?col=(\d+)&.*?row=(\d+)', html, re.I)
+                        if img_match:
+                            col, row = int(img_match.group(1)), int(img_match.group(2))
+                    else:
+                        row, col = int(img_match.group(1)), int(img_match.group(2))
+
+                    # 2. Look for var act_x and var act_y (act_y = row, act_x = col)
+                    if not row or not col:
+                        act_x = re.search(r'var\s+act_x\s*=\s*(\d+)', html, re.I)
+                        act_y = re.search(r'var\s+act_y\s*=\s*(\d+)', html, re.I)
+                        if act_x and act_y:
+                            col = int(act_x.group(1))
+                            row = int(act_y.group(1))
+
+                    # 3. Look for var row and var col
+                    if not row or not col:
+                        v_row = re.search(r'var\s+row\s*=\s*(\d+)', html, re.I)
+                        v_col = re.search(r'var\s+col\s*=\s*(\d+)', html, re.I)
+                        if v_row and v_col:
+                            row = int(v_row.group(1))
+                            col = int(v_col.group(2))
+
+                    # 4. Look for row=... col=... in params
+                    if not row or not col:
+                        r_match = re.search(r'row=(\d+)', html, re.I)
+                        c_match = re.search(r'col=(\d+)', html, re.I)
+                        if r_match and c_match:
+                            row = int(r_match.group(1))
+                            col = int(c_match.group(1))
+
+                    if row and col:
+                        break
+            except Exception as e:
+                print(f"Error resolving GPS coordinates via {url}: {e}")
+
+        # Fallback approximation for UM 4km Poland grid when network is offline
+        if not row or not col:
+            approx_row = int(round(406 - (n_all - 52.23) * 28.0))
+            approx_col = int(round(250 + (e_all - 21.01) * 14.0))
+            row = max(100, min(650, approx_row))
+            col = max(10, min(500, approx_col))
+
+        return {
+            "row": row,
+            "col": col,
+            "lat": n_all,
+            "lon": e_all,
+            "fdate": fdate,
+            "lang": lang_code
+        }
+
     def fetch_mgram_image(self, city_id: int, row: int, col: int, cache_dir: str, force_refresh: bool = False, lang: str = "pl") -> dict:
         """
         Loads the meteogram image, caching it inside local storage.
@@ -387,6 +474,12 @@ def search(query: str):
 
 def fetch(city_id: int, row: int, col: int, cache_dir: str, force_refresh: bool, lang: str = "pl"):
     return json.dumps(_fetcher.fetch_mgram_image(city_id, row, col, cache_dir, force_refresh, lang))
+
+def gps_to_grid(lat: float, lon: float, lang: str = "pl"):
+    return json.dumps(_fetcher.convert_gps_to_grid(lat, lon, lang))
+
+def gps(lat: float, lon: float, lang: str = "pl"):
+    return json.dumps(_fetcher.convert_gps_to_grid(lat, lon, lang))
 
 def get_cache_info(cache_dir: str):
     return json.dumps(_fetcher.get_cache_info(cache_dir))

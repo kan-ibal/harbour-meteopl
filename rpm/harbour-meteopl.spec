@@ -1,6 +1,6 @@
 Name:       harbour-meteopl
 Summary:    MeteoPL - Sailfish OS Meteo Client
-Version:    1.1
+Version:    1.2
 Release:    0
 Group:      Qt/Qt
 License:    MIT

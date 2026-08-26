@@ -118,7 +118,24 @@ msgstr "Coordinates [%1, %2]"
 msgid "Brak zapisanych plików."
 msgstr "No saved files."
 
-#: native/qml/pages/GridPage.qml:37
+#: native/qml/pages/GridPage.qml:35
+msgid "Pobierz pozycję GPS"
+msgstr "Get GPS position"
+
+#: native/qml/pages/GridPage.qml:35 native/qml/pages/GridPage.qml:41 native/qml/pages/GridPage.qml:66
+msgid "Pobieranie pozycji GPS..."
+msgstr "Getting GPS position..."
+
+#: native/qml/pages/GridPage.qml:43
+msgid "Nie udało się ustalić pozycji GPS."
+msgstr "Could not determine GPS position."
+
+#: native/qml/pages/GridPage.qml:66
+#, qt-format
+msgid "Lokalizacja GPS: %1, %2"
+msgstr "GPS Location: %1, %2"
+
+#: native/qml/pages/GridPage.qml:51
 msgid "Siatka Współrzędnych"
 msgstr "Coordinate Grid"
 

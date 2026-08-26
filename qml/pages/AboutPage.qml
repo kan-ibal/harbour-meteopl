@@ -32,7 +32,7 @@ Page {
                 }
 
                 Label {
-                    text: "MeteoPL v1.1"
+                    text: "MeteoPL v1.2"
                     font.bold: true
                     font.pixelSize: Theme.fontSizeLarge
                     anchors.horizontalCenter: parent.horizontalCenter

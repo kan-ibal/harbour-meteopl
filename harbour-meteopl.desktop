@@ -9,4 +9,4 @@ Name=MeteoPL
 [X-Sailjail]
 OrganizationName=pl.kan-ibal
 ApplicationName=meteopl
-Permissions=Internet
+Permissions=Internet;Location
