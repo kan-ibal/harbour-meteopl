@@ -130,6 +130,11 @@ msgstr "Getting GPS position..."
 msgid "Nie udało się ustalić pozycji GPS."
 msgstr "Could not determine GPS position."
 
+#: native/qml/pages/GridPage.qml:66 native/qml/pages/GridPage.qml:109
+#, qt-format
+msgid "Lokalizacja GPS: %1"
+msgstr "GPS Location: %1"
+
 #: native/qml/pages/GridPage.qml:66
 #, qt-format
 msgid "Lokalizacja GPS: %1, %2"

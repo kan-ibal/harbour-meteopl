@@ -21,6 +21,7 @@ var translations = {
         "Siatka Współrzędnych": "Coordinate Grid",
         "Pobierz pozycję GPS": "Get GPS position",
         "Pobieranie pozycji GPS...": "Getting GPS position...",
+        "Lokalizacja GPS: %1": "GPS Location: %1",
         "Lokalizacja GPS: %1, %2": "GPS Location: %1, %2",
         "Nie udało się ustalić pozycji GPS.": "Could not determine GPS position.",
         "Ręczny dobór punktu modelu UM": "Manual selection of UM model point",
@@ -74,7 +75,18 @@ var translations = {
         "Natywny klient meteogramów dla systemu Sailfish OS. Pozwala pobierać, przeglądać i lokalnie zapisywać (cache) prognozy numeryczne ICM UM 4 km z portalu old.meteo.pl.": "Native meteogram client for Sailfish OS. Allows fetching, viewing, and locally caching ICM UM 4 km numerical forecasts from the old.meteo.pl portal.",
         "Język: English": "Language: English",
         "Język: Polski": "Language: Polski",
-        "Zmień język": "Switch language"
+        "Zmień język": "Switch language",
+        "Ustawienia": "Settings",
+        "Zarządzanie ulubionymi i domyślnym miastem": "Manage favorites and default city",
+        "Domyślna miejscowość startowa": "Default startup location",
+        "Ulubione Miejsca i Wybór Domyślnego": "Favorite Places & Default Choice",
+        "Domyślna": "Default",
+        "Miejscowość domyślna": "Default location",
+        "Ustaw jako domyślną startową": "Set as default startup",
+        "Dodaj do ulubionych": "Add to favorites",
+        "Ustaw jako domyślną": "Set as default",
+        "★ Ulubiona (Domyślna) • ": "★ Favorite (Default) • ",
+        "★ Ulubiona • ": "★ Favorite • "
     },
     "pl": {
         "O programie": "O programie",
@@ -96,6 +108,7 @@ var translations = {
         "Siatka Współrzędnych": "Siatka Współrzędnych",
         "Pobierz pozycję GPS": "Pobierz pozycję GPS",
         "Pobieranie pozycji GPS...": "Pobieranie pozycji GPS...",
+        "Lokalizacja GPS: %1": "Lokalizacja GPS: %1",
         "Lokalizacja GPS: %1, %2": "Lokalizacja GPS: %1, %2",
         "Nie udało się ustalić pozycji GPS.": "Nie udało się ustalić pozycji GPS.",
         "Ręczny dobór punktu modelu UM": "Ręczny dobór punktu modelu UM",
@@ -149,15 +162,33 @@ var translations = {
         "Natywny klient meteogramów dla systemu Sailfish OS. Pozwala pobierać, przeglądać i lokalnie zapisywać (cache) prognozy numeryczne ICM UM 4 km z portalu old.meteo.pl.": "Natywny klient meteogramów dla systemu Sailfish OS. Pozwala pobierać, przeglądać i lokalnie zapisywać (cache) prognozy numeryczne ICM UM 4 km z portalu old.meteo.pl.",
         "Język: English": "Język: English",
         "Język: Polski": "Język: Polski",
-        "Zmień język": "Zmień język"
+        "Zmień język": "Zmień język",
+        "Ustawienia": "Ustawienia",
+        "Zarządzanie ulubionymi i domyślnym miastem": "Zarządzanie ulubionymi i domyślnym miastem",
+        "Domyślna miejscowość startowa": "Domyślna miejscowość startowa",
+        "Ulubione Miejsca i Wybór Domyślnego": "Ulubione Miejsca i Wybór Domyślnego",
+        "Domyślna": "Domyślna",
+        "Miejscowość domyślna": "Miejscowość domyślna",
+        "Ustaw jako domyślną startową": "Ustaw jako domyślną startową",
+        "Dodaj do ulubionych": "Dodaj do ulubionych",
+        "Ustaw jako domyślną": "Ustaw jako domyślną",
+        "★ Ulubiona (Domyślna) • ": "★ Ulubiona (Domyślna) • ",
+        "★ Ulubiona • ": "★ Ulubiona • "
     }
 };
 
-function getTranslation(text, lang) {
+function getTranslation(text, lang, arg1, arg2, arg3) {
     if (!lang) lang = "pl";
     var langDict = translations[lang] || translations["pl"];
-    if (langDict && langDict[text] !== undefined) {
-        return langDict[text];
+    var res = (langDict && langDict[text] !== undefined) ? langDict[text] : text;
+    if (arg1 !== undefined && arg1 !== null) {
+        res = res.replace("%1", arg1);
     }
-    return text;
+    if (arg2 !== undefined && arg2 !== null) {
+        res = res.replace("%2", arg2);
+    }
+    if (arg3 !== undefined && arg3 !== null) {
+        res = res.replace("%3", arg3);
+    }
+    return res;
 }

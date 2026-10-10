@@ -14,8 +14,8 @@ ApplicationWindow {
     // Language state: 'pl' (default) or 'en'
     property string currentLanguage: "pl"
 
-    function tr(text) {
-        return I18n.getTranslation(text, currentLanguage);
+    function tr(text, arg1, arg2, arg3) {
+        return I18n.getTranslation(text, currentLanguage, arg1, arg2, arg3);
     }
 
     function toggleLanguage() {
@@ -31,13 +31,15 @@ ApplicationWindow {
     }
 
     // Global application properties
-    property var activeCity: ({
+    property var defaultFavoriteCity: ({
         "name": "Warszawa",
         "row": 406,
         "col": 250,
         "id": 2216,
         "voivodeship": "mazowieckie"
     })
+
+    property var activeCity: defaultFavoriteCity
     
     property string meteogramLocalPath: ""
     property string cacheTimeText: tr("Brak danych")
@@ -85,11 +87,13 @@ ApplicationWindow {
                         favoriteCities = settings.favoriteCities;
                     }
                     if (settings.defaultFavoriteCity && settings.defaultFavoriteCity.name && settings.defaultFavoriteCity.row && settings.defaultFavoriteCity.col) {
-                        activeCity = settings.defaultFavoriteCity;
+                        defaultFavoriteCity = settings.defaultFavoriteCity;
+                        activeCity = defaultFavoriteCity;
+                    } else if (favoriteCities.length > 0) {
+                        defaultFavoriteCity = favoriteCities[0];
+                        activeCity = defaultFavoriteCity;
                     } else if (settings.activeCity && settings.activeCity.name && settings.activeCity.row && settings.activeCity.col) {
                         activeCity = settings.activeCity;
-                    } else if (favoriteCities.length > 0) {
-                        activeCity = favoriteCities[0];
                     }
                 } catch(e) {
                     console.log("Error parsing settings: " + e);
@@ -100,12 +104,11 @@ ApplicationWindow {
     }
 
     function saveSettings() {
-        var defaultFav = isCityFavorite(activeCity) ? activeCity : (favoriteCities.length > 0 ? favoriteCities[0] : activeCity);
         var data = {
             "language": currentLanguage,
             "favoriteCities": favoriteCities,
-            "activeCity": activeCity,
-            "defaultFavoriteCity": defaultFav
+            "defaultFavoriteCity": defaultFavoriteCity,
+            "activeCity": activeCity
         };
         py.call('mgram_fetcher.save_settings', [cacheDir, JSON.stringify(data)], function(res) {
             console.log("Settings saved.");
@@ -150,13 +153,22 @@ ApplicationWindow {
         }
         if (foundIdx >= 0) {
             favoriteCities.splice(foundIdx, 1);
+            if (defaultFavoriteCity.row === city.row && defaultFavoriteCity.col === city.col) {
+                defaultFavoriteCity = favoriteCities.length > 0 ? favoriteCities[0] : ({ "name": "Warszawa", "row": 406, "col": 250, "id": 2216, "voivodeship": "mazowieckie" });
+            }
         } else {
             favoriteCities.push(city);
-            // Setting a city as favorite automatically sets it as the active standard city
-            activeCity = city;
         }
-        // Force state update notification
         favoriteCities = favoriteCities;
+        saveSettings();
+    }
+
+    function setDefaultFavoriteCity(city) {
+        defaultFavoriteCity = city;
+        if (!isCityFavorite(city)) {
+            favoriteCities.push(city);
+            favoriteCities = favoriteCities;
+        }
         saveSettings();
     }
 
@@ -167,5 +179,9 @@ ApplicationWindow {
             }
         }
         return false;
+    }
+
+    function isDefaultCity(city) {
+        return defaultFavoriteCity.row === city.row && defaultFavoriteCity.col === city.col;
     }
 }

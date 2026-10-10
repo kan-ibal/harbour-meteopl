@@ -38,8 +38,13 @@ Page {
                 onClicked: toggleLanguage()
             }
             MenuItem {
-                text: isCityFavorite(activeCity) ? tr("Usuń z ulubionych") : tr("Oznacz jako ulubione i domyślne")
+                text: isCityFavorite(activeCity) ? tr("Usuń z ulubionych") : tr("Dodaj do ulubionych")
                 onClicked: toggleFavorite(activeCity)
+            }
+            MenuItem {
+                visible: isCityFavorite(activeCity)
+                text: isDefaultCity(activeCity) ? tr("Miejscowość domyślna") : tr("Ustaw jako domyślną startową")
+                onClicked: setDefaultFavoriteCity(activeCity)
             }
             MenuItem {
                 text: tr("Odśwież prognozę")
@@ -51,7 +56,8 @@ Page {
         PageHeader {
             id: header
             title: activeCity.name
-            description: (currentLanguage === "pl" ? ("Wiersz: " + activeCity.row + " Kolumna: " + activeCity.col) : ("Row: " + activeCity.row + " Column: " + activeCity.col)) + (isCityFavorite(activeCity) ? ("\n" + tr("★ Ulubione (Domyślne) • ")) : "")
+            description: (currentLanguage === "pl" ? ("Wiersz: " + activeCity.row + " Kolumna: " + activeCity.col) : ("Row: " + activeCity.row + " Column: " + activeCity.col)) + 
+                         (isDefaultCity(activeCity) ? ("\n" + tr("★ Ulubiona (Domyślna) • ")) : (isCityFavorite(activeCity) ? ("\n" + tr("★ Ulubiona • ")) : ""))
         }
 
        // Main status banner

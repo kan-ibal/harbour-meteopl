@@ -117,9 +117,21 @@ Page {
 
                 Repeater {
                     model: favoriteCities
-                    delegate: BackgroundItem {
+                    delegate: ListItem {
                         width: parent.width
-                        height: Theme.itemSizeMedium
+                        contentHeight: Theme.itemSizeMedium
+
+                        menu: ContextMenu {
+                            MenuItem {
+                                text: tr("Usuń z ulubionych")
+                                onClicked: toggleFavorite(modelData)
+                            }
+                            MenuItem {
+                                text: tr("Ustaw jako domyślną")
+                                visible: !isDefaultCity(modelData)
+                                onClicked: setDefaultFavoriteCity(modelData)
+                            }
+                        }
 
                         Column {
                             anchors.left: parent.left
@@ -136,7 +148,8 @@ Page {
                             }
                             Label {
                                 text: (currentLanguage === "pl" ? ("Siatka UM: R:" + modelData.row + " C:" + modelData.col) : ("UM Grid: R:" + modelData.row + " C:" + modelData.col)) +
-                                      (modelData.county && modelData.county !== "none" ? ((currentLanguage === "pl" ? " • pow. " : " • county: ") + modelData.county) : "")
+                                      (modelData.county && modelData.county !== "none" ? ((currentLanguage === "pl" ? " • pow. " : " • county: ") + modelData.county) : "") +
+                                      (isDefaultCity(modelData) ? (" • " + tr("Domyślna")) : "")
                                 font.pixelSize: Theme.fontSizeTiny
                                 color: Theme.secondaryColor
                                 elide: Text.ElideRight
@@ -146,7 +159,7 @@ Page {
 
                         IconButton {
                             id: favButton
-                            icon.source: "image://theme/icon-m-favorite-selected"
+                            icon.source: isDefaultCity(modelData) ? "image://theme/icon-m-favorite-selected" : "image://theme/icon-m-favorite"
                             anchors.right: parent.right
                             anchors.rightMargin: Theme.horizontalPageMargin
                             anchors.verticalCenter: parent.verticalCenter
